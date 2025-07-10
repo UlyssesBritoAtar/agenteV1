@@ -18,7 +18,9 @@ eventos_disparo = {}
 respostas_esperadas_por_cliente = {}
 
 def extrair_numeros(telefone: str) -> str:
-    return re.sub(r"[^\d]", "", telefone)
+    telefone_str = str(telefone).split(".")[0]  # Remove ".0" caso exista
+    return re.sub(r"[^\d]", "", telefone_str)
+
 
 def adicionar_log(cliente_id, mensagem):
     with store_lock:
@@ -58,7 +60,13 @@ def cliente_disparar():
         if not file or not file.filename.endswith('.xlsx'):
             return jsonify({"error": "❗ Arquivo inválido"}), 400
 
-        df = pd.read_excel(file)
+        df_temp = pd.read_excel(file)
+        if df_temp.shape[1] < 2:
+            return jsonify({"error": "Planilha precisa de ao menos duas colunas (nome e telefone)."}), 400
+
+        telefone_coluna = df_temp.columns[1]
+        df = pd.read_excel(file, dtype={telefone_coluna: str})
+
         if df.shape[1] < 2:
             return jsonify({"error": "Planilha precisa de ao menos duas colunas (nome e telefone)."}), 400
 

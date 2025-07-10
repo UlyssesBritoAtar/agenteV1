@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gerenciar Agentes</title>
+</head>
+<body>
+    <h1>Meus Agentes</h1>
+    {% for agente in agentes %}
+        <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+            <strong>{{ agente.nome }}</strong> (Ativo: {{ 'Sim' if agente.ativo else 'Não' }})
+            <br>
+            <a href="{{ url_for('agente.ativar_agente_global', agente_id=agente.id) }}">Ativar Global</a> |
+            <a href="{{ url_for('agente.desativar_agente_global', agente_id=agente.id) }}">Desativar Global</a>
+            <form action="{{ url_for('agente.desativar_agente_telefone', agente_id=agente.id) }}" method="post" style="margin-top: 10px;">
+                Desativar para número específico:<br>
+                <input type="text" name="telefone" placeholder="Número Ex: 11999999999" required>
+                <button type="submit">Desativar</button>
+            </form>
+            <form action="{{ url_for('agente.reativar_agente_telefone', agente_id=agente.id) }}" method="post" style="margin-top: 5px;">
+                Reativar para número específico:<br>
+                <input type="text" name="telefone" placeholder="Número Ex: 11999999999" required>
+                <button type="submit">Reativar</button>
+            </form>
+        </div>
+    {% endfor %}
+    <a href="{{ url_for('cliente.dashboard') }}">Voltar ao Painel</a>
+</body>
+</html>

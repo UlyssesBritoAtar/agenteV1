@@ -1,0 +1,23 @@
+# Arquivos de ambiente
+.env
+*.env
+
+# Bytecode do Python
+__pycache__/
+*.py[cod]
+
+# Arquivos de log
+*.log
+
+# Virtualenvs
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db

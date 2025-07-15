@@ -1,0 +1,33 @@
+html {
+  font-size: 125%;
+}
+
+@media (max-width: 1920px) {
+  html {
+    font-size: 112.5%;
+  }
+}
+
+@media (max-width: 1680px) {
+  html {
+    font-size: 93.75%;
+  }
+}
+
+@media (max-width: 1440px) {
+  html {
+    font-size: 87.5%;
+  }
+}
+
+@media (max-width: 1240px) {
+  html {
+    font-size: 81.25%;
+  }
+}
+
+@media (max-width: 900px) {
+  html {
+    font-size: 75%;
+  }
+}

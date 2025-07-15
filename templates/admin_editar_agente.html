@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editar Agente - {{ agente.nome }}</title>
+</head>
+<body>
+    <h1>Editar Agente - {{ agente.nome }}</h1>
+
+    <!-- Formulário de edição -->
+    <form method="post">
+        <label>Nome do Agente:</label><br>
+        <input type="text" name="nome" value="{{ agente.nome }}" required><br><br>
+
+        <label>API Key:</label><br>
+        <input type="text" name="api_key" value="{{ agente.api_key }}" required><br><br>
+
+        <label>Instance Key:</label><br>
+        <input type="text" name="instance_key" value="{{ agente.instance_key }}" required><br><br>
+
+        <label>Número do Operador (WhatsApp):</label><br>
+        <input type="text" name="numero_operador" value="{{ agente.numero_operador }}" placeholder="Ex: 5591999999999" required><br><br>
+
+        <label>Instruções (texto puro):</label><br>
+        <textarea name="instrucoes_texto" rows="8" cols="80" required>{{ agente.arquivo_instrucoes }}</textarea><br><br>
+
+        <label>Params (JSON puro):</label><br>
+        <textarea name="params_json" rows="8" cols="80" required>{{ agente.arquivo_params }}</textarea><br><br>
+
+        <button type="submit">Salvar Alterações</button>
+    </form>
+
+    <!-- Botão de exclusão separado -->
+    <form method="post" action="{{ url_for('admin.excluir_agente', agente_id=agente.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este agente?');" style="margin-top:20px;">
+        <button type="submit" style="background:red; color:white;">Excluir Agente</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('admin.listar_agentes', cliente_id=cliente.id) }}">Voltar</a>
+</body>
+</html>

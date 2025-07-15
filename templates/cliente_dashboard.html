@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=League+Spartan:wght@100..900&display=swap"
+          rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+    <!-- Awesom Icons Import -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <title>Área do Cliente - Disparo de Leads e Agentes</title>
+</head>
+
+<body>
+
+<div class="container">
+    <header class="header">
+        <div class="header__logo">
+            <img src="{{ url_for('static', filename='images/atar-logo-white.svg') }}" alt="Atar Connect">
+        </div>
+        <div class="header__user">
+
+            <div class="header__user-avatar">
+                <img src="{{ url_for('static', filename='images/user-placeholder.svg') }}"
+                     alt="{{ current_user.username }}">
+            </div>
+            <p class="header__user-name">{{ current_user.username }}</p>
+
+            <button class="header__user-logout" onclick="fazerLogout()" title="Sair">
+                <i class="fa-solid fa-right-from-bracket"></i> Sair
+            </button>
+        </div>
+    </header>
+
+    <div class="content">
+        <main class="panel">
+            <div class="panel__broadcast">
+                <h1 class="panel__title title">Área do Cliente - Disparo de Leads</h1>
+
+                <hr class="panel__broadcast-divider">
+
+                <form id="formDisparo" enctype="multipart/form-data">
+                    <div class="panel__broadcast-form-group panel__broadcast-form-group--file">
+                        <label class="file-upload">
+                            <input type="file" name="file" accept=".xlsx" required class="file-upload__input">
+                            <div class="file-upload__content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p class="file-upload__text">Arraste sua planilha aqui ou <span>escolha o arquivo</span>
+                                </p>
+                                <p class="file-upload__info">Formato aceito: .xlsx</p>
+                            </div>
+                            <div class="file-upload__preview">
+                                <span class="file-upload__name"></span>
+                                <button type="button" class="file-upload__remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </label>
+                    </div>
+
+                    <hr class="panel__broadcast-divider">
+
+                    <div class="panel__broadcast-form-group">
+                        <label>Mensagem personalizada:</label>
+                        <textarea name="mensagem" rows="3" required></textarea>
+                    </div>
+
+                    <div class="panel__broadcast-form-group">
+                        <label>Enviar cada mensagem em (segundos):</label>
+                        <input type="text" name="intervalo_mensagem" required>
+                    </div>
+
+                    <div class="panel__broadcast-form-group">
+                        <label>Pausar a cada X mensagens:</label>
+                        <input type="text" name="quantidade_pausa" required>
+                    </div>
+
+                    <div class="panel__broadcast-form-group">
+                        <label>Tempo de pausa (segundos):</label>
+                        <input type="text" name="tempo_pausa" required>
+
+                        <div class="panel__broadcast-buttons">
+                            <button class="rounded-button start-button" type="submit">
+                                <i class="fas fa-play"></i> INICIAR DISPARO
+                            </button>
+                        </div>
+                        <div>
+                            Para deixar aleatorio digite os dois valores separados por uma virgula EX: 5,10
+                            OBS: Caso digite um único número o valor será fixo
+                        </div>
+                    </div>
+                </form>
+
+                <div>
+                    <button class="rounded-button pause-button" id="pauseBtn" onclick="togglePause()">
+                        <i class="fas fa-pause"></i> PAUSAR
+                    </button>
+                    <button class="rounded-button cancel-button" id="cancelBtn" onclick="cancelarDisparo()">
+                        <i class="fas fa-times"></i> CANCELAR DISPARO
+                    </button>
+                    <button class="rounded-button clear-button" onclick="limparLogs()">
+                        <i class="fas fa-trash"></i> LIMPAR LOGS
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel__agents">
+                <h2 class="title">Meus Agentes</h2>
+                <div class="panel__agents-list">
+                    {% for agente in agentes %}
+                    <div class="agente-card">
+                        <div class="agente-card__item">
+                            <p class="agente-card__title"><span>{{ agente.nome }}</span> <span>(Ativo: {{ 'Sim' if agente.ativo else 'Não' }})</span>
+                            </p>
+                            <div class="agente-card__actions">
+                                <a class="agente-card__link"
+                                   href="{{ url_for('cliente.ativar_agente', agente_id=agente.id) }}"><i
+                                        class="fas fa-check"></i> Ativar Global</a>
+                                <a class="agente-card__link"
+                                   href="{{ url_for('cliente.desativar_agente', agente_id=agente.id) }}"><i
+                                        class="fas fa-times"></i> Desativar Global</a>
+                            </div>
+                        </div>
+
+                        <div class="agente-card__item">
+                            <form action="{{ url_for('cliente.desativar_agente_telefone', agente_id=agente.id) }}"
+                                  method="post">
+                                <label class="agente-card__title">Desativar para número específico:</label>
+                                <input class="agente-card__input" type="text" name="telefone"
+                                       placeholder="Número Ex: 5511999999999" required>
+                                <button class="agente-card__button rounded-button cancel-button" type="submit"><i
+                                        class="fas fa-times"></i> Desativar
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="agente-card__item">
+                            <form action="{{ url_for('cliente.reativar_agente_telefone', agente_id=agente.id) }}"
+                                  method="post">
+                                <label class="agente-card__title">Reativar para número específico:</label>
+                                <input class="agente-card__input" type="text" name="telefone"
+                                       placeholder="Número Ex: 5511999999999" required>
+                                <button class="agente-card__button rounded-button start-button" type="submit"><i
+                                        class="fas fa-forward"></i> Reativar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="panel__qrcode">
+                    <h2 class="title">Escaneie o QR Code</h2>
+                    <div id="qr-code" class="qr-code"></div>
+                    <p class="qr-result">O QR Code deve aparecer acima caso não tenha sido escaneado ainda.</p>
+                    <p class="qr-result">Após escanear o QR Code recarregue a página.</p>
+                </div>
+            </div>
+        </main>
+
+        <aside class="panel__logs">
+            <header>
+                <h3 class="title">Log do Disparo:</h3>
+                <h4 class="panel__logs-subtitle">Número de Disparos: <span id="numeroDisparos">0</span></h4>
+                <hr>
+            </header>
+            <pre id="log"></pre>
+        </aside>
+    </div>
+</div>
+
+<script defer>
+    const qrCodeWrapper = document.querySelector("#qr-code");
+
+        function getQRCode() {
+             fetch('{{ url_for('cliente.conectar_instancia', agente_id=agentes[0].id) }}').then(res => res.json()).then(data => {
+             const qrcodeSrc = data.base64;
+
+        if (qrcodeSrc) {
+
+          const img = new Image();
+          img.src = qrcodeSrc;
+
+          qrCodeWrapper.append(img);
+        }
+      })
+    }
+
+    getQRCode()
+
+        function atualizarLog() {
+    fetch('{{ url_for("disparo.cliente_status") }}')
+        .then(response => response.json())
+        .then(data => {
+            const logElement = document.getElementById('log');
+            if (data.logs && data.logs.length > 0) {
+                logElement.innerHTML = data.logs.map(line => `${line}`).join("<br>");
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+
+            const tempoPausaDelayEmSegundos = parseInt(document.querySelector("[name='tempo_pausa']").value, 10) || 2;
+            document.getElementById('numeroDisparos').textContent = data.numeroDisparos || 0;
+            atualizarBotoes(data.paused, data.running);
+
+            setTimeout(atualizarLog, tempoPausaDelayEmSegundos * 1000);
+        })
+        .catch(error => {
+            console.error('Erro ao atualizar logs:', error);
+            setTimeout(atualizarLog, 5000);
+        });
+}
+        async function togglePause() {
+    try {
+        const response = await fetch('{{ url_for("disparo.cliente_pause") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao pausar/retomar');
+        }
+
+        const data = await response.json();
+        if (data.error) {
+            alert(data.error);
+        }
+    } catch (err) {
+        alert("Erro ao pausar/retomar o disparo");
+        console.error(err);
+    }
+}
+
+        function atualizarBotoes(isPaused, isRunning) {
+    const pauseBtn = document.getElementById('pauseBtn');
+    const startBtn = document.querySelector('.start-button');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    if (isRunning) {
+        startBtn.disabled = true;
+        cancelBtn.disabled = false;
+        pauseBtn.disabled = false;
+
+        if (isPaused) {
+            pauseBtn.innerHTML = '<i class="fas fa-play"></i> RETOMAR';
+        } else {
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i> PAUSAR';
+        }
+    } else {
+        startBtn.disabled = false;
+        cancelBtn.disabled = true;
+        pauseBtn.disabled = true;
+        pauseBtn.innerHTML = '<i class="fas fa-pause"></i> PAUSAR';
+    }
+}
+
+
+        async function limparLogs() {
+            try {
+                const response = await fetch('{{ url_for("disparo.cliente_limpar_logs") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao limpar logs');
+                }
+
+                document.getElementById('log').innerHTML = "";
+                document.getElementById('numeroDisparos').textContent = "0";
+            } catch (err) {
+                alert("Erro ao limpar logs");
+                console.error(err);
+            }
+        }
+
+        async function cancelarDisparo() {
+            if (!confirm("Tem certeza que deseja cancelar o disparo?")) return;
+
+            try {
+                const response = await fetch('{{ url_for("disparo.cliente_cancelar") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Erro ao cancelar');
+
+                document.getElementById('log').innerHTML = "";
+                document.getElementById('numeroDisparos').textContent = "0";
+                atualizarBotoes(false, false);
+
+                setTimeout(() => window.location.href = "{{ url_for('cliente.dashboard') }}", 1000);
+            } catch (err) {
+                alert("Erro ao cancelar disparo");
+                console.error(err);
+            }
+        }
+
+        async function fazerLogout() {
+            try {
+                const response = await fetch('{{ url_for("auth.logout") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao fazer logout');
+                }
+
+                window.location.href = '/';
+            } catch (err) {
+                alert("Erro ao fazer logout");
+                console.error(err);
+            }
+        }
+
+        document.getElementById("formDisparo").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const form = this;
+            const file = form.querySelector('input[type="file"]').files[0];
+            if (!file || !file.name.toLowerCase().endsWith('.xlsx')) {
+                alert('Por favor, selecione um arquivo Excel (.xlsx)');
+                return;
+            }
+
+            const formData = new FormData(form);
+            try {
+                const response = await fetch("{{ url_for('disparo.cliente_disparar') }}", { method: "POST", body: formData });
+                const result = await response.json();
+
+                if (response.ok && result.status === "ok") {
+                    alert(result.message || "🚀 Disparo iniciado.");
+                    atualizarLog();
+                } else {
+                    alert(result.error || "Erro ao iniciar disparo.");
+                }
+            } catch (err) {
+                console.error("Erro ao iniciar disparo:", err);
+                alert("Erro ao iniciar disparo.");
+            }
+        });
+         // File Upload Handler
+        const fileUpload = document.querySelector('.file-upload');
+        const fileInput = document.querySelector('.file-upload__input');
+        const filePreview = document.querySelector('.file-upload__preview');
+        const fileName = document.querySelector('.file-upload__name');
+        const fileContent = document.querySelector('.file-upload__content');
+        const removeButton = document.querySelector('.file-upload__remove');
+
+        function handleFile(file) {
+            if (file) {
+                fileName.textContent = file.name;
+                fileUpload.classList.add('has-file');
+            } else {
+                fileName.textContent = '';
+                fileUpload.classList.remove('has-file');
+            }
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        removeButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.value = '';
+            handleFile(null);
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileContent.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileContent.addEventListener(eventName, () => {
+                fileContent.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileContent.addEventListener(eventName, () => {
+                fileContent.classList.remove('drag-over');
+            });
+        });
+
+        fileContent.addEventListener('drop', (e) => {
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.toLowerCase().endsWith('.xlsx')) {
+                fileInput.files = e.dataTransfer.files;
+                handleFile(file);
+            } else {
+                alert('Por favor, selecione um arquivo Excel (.xlsx)');
+            }
+        });
+
+
+
+
+
+
+</script>
+</body>
+
+</html>

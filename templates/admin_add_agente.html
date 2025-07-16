@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Adicionar Agente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            max-width: 600px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        textarea {
+            resize: vertical;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mostra mensagens de flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}operador
+
+    <h1>Cadastrar Novo Agente</h1>
+    <form method="post">
+        <label for="nome">Nome do Agente:</label><br>
+        <input type="text" id="nome" name="nome" value="{{ request.form.nome|default('') }}" required><br>
+
+        <label for="instance_key">Instance Key (da sua instância EvolutionAPI):</label><br>
+        <input type="text" id="instance_key" name="instance_key" value="{{ request.form.instance_key|default('') }}" placeholder="Ex: UlyssesNovoBotWhats" required><br>
+
+        <label for="api_key">API Key (da sua instância EvolutionAPI):</label><br>
+        <input type="text" id="api_key" name="api_key" value="{{ request.form.api_key|default('') }}" placeholder="Chave de API" required><br>
+
+        <label for="numero_operador">Número do Operador (WhatsApp):</label><br>
+        <input type="text" id="numero_operador" name="numero_operador" value="{{ request.form.numero_operador|default('') }}" placeholder="Ex: 5591999999999" required><br>
+
+        <label for="instrucoes_texto">Instruções (texto puro):</label><br>
+        <textarea id="instrucoes_texto" name="instrucoes_texto" rows="8" cols="80" placeholder="Digite as instruções aqui..." required>{{ request.form.instrucoes_texto|default('') }}</textarea><br>
+
+        <label for="params_json">Params (JSON puro):</label><br>
+        <textarea id="params_json" name="params_json" rows="8" cols="80" placeholder='{"exemplo": "valor"}' required>{{ request.form.params_json|default('') }}</textarea><br>
+
+        <button type="submit">Salvar Agente</button>
+    </form>
+    <a href="{{ url_for('admin.dashboard') }}">Voltar ao Dashboard</a>
+</body>
+</html>

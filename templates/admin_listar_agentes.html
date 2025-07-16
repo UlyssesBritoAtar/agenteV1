@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agentes de {{ cliente.nome }}</title>
+</head>
+<body>
+    <h1>Agentes de {{ cliente.nome }}</h1>
+
+    <ul>
+    {% for agente in agentes %}
+        <li>
+            {{ agente.nome }} (Ativo: {{ 'Sim' if agente.ativo else 'Não' }})<br>
+            <a href="{{ url_for('admin.editar_agente', agente_id=agente.id) }}">Editar Agente</a>
+        </li>
+    {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('admin.dashboard') }}">Voltar ao Dashboard</a>
+</body>
+</html>
